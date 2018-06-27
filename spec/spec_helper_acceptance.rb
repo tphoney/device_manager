@@ -58,10 +58,6 @@ def run_device(cert_name, options = { allow_changes: true })
   end
 end
 
-def run_and_expect(proxy_cert_name, device_cert_name, regexes)
-  expect_multiple_regexes(result: run_task(task_name: 'device_manager::run_puppet_device', host: proxy_cert_name, params: "target=#{device_cert_name}"), regexes: regexes)
-end
-
 def run_resource(cert_name, resource_type, resource_title = nil)
   if resource_title
     on(master, puppet('device', '--target', cert_name, '--resource', resource_type, resource_title, '--trace'), acceptable_exit_codes: [0, 1]).stdout
@@ -72,6 +68,7 @@ end
 
 RSpec.configure do |c|
   c.before :suite do
+    run_puppet_access_login(user: 'admin') if pe_install?
     unless ENV['BEAKER_TESTMODE'] == 'local'
       unless ENV['BEAKER_provision'] == 'no'
         install_module_from_forge('puppetlabs-cisco_ios', '0.2.0')
